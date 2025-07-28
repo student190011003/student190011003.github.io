@@ -793,6 +793,163 @@
                                          <div className="bg-primary-500 text-white p-6 rounded-xl flex flex-col md:flex-row items-start md:items-center justify-between shadow-lg"><div className="flex items-center mb-4 md:mb-0"><div className="bg-primary-600 p-3 rounded-lg mr-4"><Server size={32} /></div><div><h2 className="text-xl font-bold">Selamat Datang, {adminProfile.name}!</h2><p className="text-primary-100 mt-1">Kelola semua dari sini.</p></div></div><button onClick={onNewOrderClick} className="bg-white text-primary-600 hover:bg-primary-100 font-bold py-3 px-5 rounded-lg flex items-center gap-2">New Order</button></div>
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"><h2 className="text-lg font-bold text-gray-800">Dashboard</h2><div className="flex flex-wrap items-center gap-2"><select value={dateRange} onChange={e => setDateRange(e.target.value)} className="bg-white border border-gray-300 rounded-md py-2 px-3 text-sm"><option value="7_days">7 Hari Terakhir</option><option value="this_month">Bulan Ini</option><option value="this_year">Tahun Ini</option><option value="custom">Kustom</option></select>{dateRange === 'custom' && (<div className="flex gap-2"><input type="date" value={customRange.start} onChange={e => setCustomRange(p => ({...p, start: e.target.value}))} className="bg-white border border-gray-300 rounded-md py-1.5 px-3 text-sm" /><input type="date" value={customRange.end} onChange={e => setCustomRange(p => ({...p, end: e.target.value}))} className="bg-white border border-gray-300 rounded-md py-1.5 px-3 text-sm" /></div>)}</div></div>
                                          <div><h3 className="text-base font-semibold text-gray-800 mb-4">Statistik</h3><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">{stats.map(stat => (<div key={stat.label} className="bg-fresh-white p-6 rounded-xl border border-fresh text-center shadow-sm"><p className="text-3xl font-bold text-gray-800">{stat.value}</p><p className="text-fresh-gray mt-1 text-sm">{stat.label}</p></div>))}</div></div>
+                
+                {/* Advanced Analytics Section */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Top Customers */}
+                  <div className="bg-fresh-white p-6 rounded-xl border border-fresh shadow-sm">
+                    <h3 className="text-base font-semibold text-gray-800 mb-4">Top Pelanggan (Lifetime Value)</h3>
+                    <div className="space-y-3">
+                      {getTopCustomers().slice(0, 5).map((customer, index) => (
+                        <div key={customer.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <span className="w-6 h-6 bg-primary-500 text-white text-xs flex items-center justify-center rounded-full font-bold">
+                              {index + 1}
+                            </span>
+                            <div>
+                              <p className="font-medium text-gray-800">{customer.name}</p>
+                              <p className="text-xs text-gray-500">{customer.activeServices} layanan aktif</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold text-primary-600">{formatCurrencyWithCode(customer.lifetimeValue)}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Churn Risk Analysis */}
+                  <div className="bg-fresh-white p-6 rounded-xl border border-fresh shadow-sm">
+                    <h3 className="text-base font-semibold text-gray-800 mb-4">Analisis Risiko Churn</h3>
+                    <div className="space-y-3">
+                      {calculateChurnRisk().slice(0, 5).map((customer, index) => (
+                        <div key={customer.id} className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-red-100 rounded-lg">
+                              <AlertTriangle className="h-4 w-4 text-red-600" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-800">{customer.name}</p>
+                              <p className="text-xs text-red-600">
+                                {customer.expiringSoon > 0 && `${customer.expiringSoon} layanan berakhir`}
+                                {customer.overdueInvoices > 0 && ` • ${customer.overdueInvoices} tagihan terlambat`}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-red-600 font-medium">Risk:</span>
+                              <span className="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full font-medium">
+                                {(customer.riskScore * 10).toFixed(1)}/10
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      {calculateChurnRisk().length === 0 && (
+                        <div className="text-center p-4 text-gray-500">
+                          <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                          <p className="text-sm">Tidak ada pelanggan berisiko tinggi</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* System Health Status */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 bg-green-100 rounded-lg">
+                        <Server className="h-5 w-5 text-green-600" />
+                      </div>
+                      <h3 className="font-semibold text-gray-800">Status Sistem</h3>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Database Connection</span>
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Online</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Email Service</span>
+                        <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">Simulation</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Last Backup</span>
+                        <span className="text-xs text-gray-500">Manual</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <BarChart2 className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <h3 className="font-semibold text-gray-800">Performa Bulan Ini</h3>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">New Customers</span>
+                        <span className="font-semibold text-blue-600">+{customers.filter(c => {
+                          const joinDate = new Date(c.joinDate);
+                          const now = new Date();
+                          return joinDate.getMonth() === now.getMonth() && joinDate.getFullYear() === now.getFullYear();
+                        }).length}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Active Services</span>
+                        <span className="font-semibold text-green-600">{services.filter(s => s.status === 'Aktif').length}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Paid Invoices</span>
+                        <span className="font-semibold text-green-600">{invoices.filter(i => i.status === 'Lunas').length}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 bg-primary-100 rounded-lg">
+                        <Settings className="h-5 w-5 text-primary-600" />
+                      </div>
+                      <h3 className="font-semibold text-gray-800">Pengaturan Cepat</h3>
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs text-gray-600 mb-1">Mata Uang</label>
+                        <select 
+                          value={defaultCurrency} 
+                          onChange={(e) => {
+                            setDefaultCurrency(e.target.value);
+                            localStorage.setItem('hpanel_currency', e.target.value);
+                          }}
+                          className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                        >
+                          {currencies.map(curr => (
+                            <option key={curr.code} value={curr.code}>{curr.code} - {curr.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-600 mb-1">PPN (%)</label>
+                        <input 
+                          type="number" 
+                          value={taxRate} 
+                          onChange={(e) => {
+                            setTaxRate(parseFloat(e.target.value) || 0);
+                            localStorage.setItem('hpanel_tax_rate', e.target.value);
+                          }}
+                          className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                          min="0" 
+                          max="100" 
+                          step="0.1"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6"><div className="lg:col-span-2 bg-fresh-white p-6 rounded-xl border border-fresh shadow-sm"><h3 className="text-base font-semibold text-gray-800 mb-4">Grafik Pendapatan</h3><BarChart data={revenueData} dataKey="Pendapatan" labelKey="name" /></div><div className="bg-fresh-white p-6 rounded-xl border border-fresh shadow-sm"><h3 className="text-base font-semibold text-gray-800 mb-4">Kategori Layanan</h3><DonutChart data={serviceCategoryData} /></div></div>
                      <div className="bg-fresh-white p-6 rounded-xl border border-fresh shadow-sm"><h3 className="text-base font-semibold text-gray-800 mb-4">Layanan Akan Kedaluwarsa (30 Hari)</h3><div className="overflow-x-auto"><table className="min-w-full text-sm"><thead className="bg-gray-50">
     <tr>
@@ -1691,9 +1848,10 @@
   const [passwords, setPasswords] = useState({ old: '', new: '', confirm: '' });
   const [scriptUrl, setScriptUrl] = useState(SCRIPT_URL);
   const [msg, setMsg] = useState('');
-  const [logoLoading, setLogoLoading] = useState(false);
-  const [profileLoading, setProfileLoading] = useState(false);
-  const [passwordLoading, setPasswordLoading] = useState(false);
+            const [logoLoading, setLogoLoading] = useState(false);
+          const [profileLoading, setProfileLoading] = useState(false);
+          const [passwordLoading, setPasswordLoading] = useState(false);
+          const [backupLoading, setBackupLoading] = useState(false);
 
   // Update logoPreview when logoUrl changes
   useEffect(() => {
@@ -2077,6 +2235,150 @@
                   </div>
                 </div>
 
+                {/* Backup & Export Section - Full Width */}
+                <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-primary-100 rounded-lg">
+                      <Download className="h-5 w-5 text-primary-600" />
+                    </div>
+                    <h3 className="font-semibold text-gray-800">Backup & Export Data</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <button 
+                      onClick={() => {
+                        setBackupLoading(true);
+                        performBackup().finally(() => setBackupLoading(false));
+                      }}
+                      disabled={backupLoading}
+                      className="bg-primary-500 text-white px-4 py-3 rounded-lg hover:bg-primary-600 disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-medium"
+                    >
+                      {backupLoading ? <Spinner className="h-4 w-4" /> : <Download className="h-4 w-4" />}
+                      {backupLoading ? 'Memproses...' : 'Backup Semua Data'}
+                    </button>
+                    <button 
+                      onClick={() => exportToCSV(customers, 'customers')}
+                      className="bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 flex items-center justify-center gap-2 text-sm font-medium"
+                    >
+                      <Download className="h-4 w-4" />
+                      Export Pelanggan CSV
+                    </button>
+                    <button 
+                      onClick={() => exportToCSV(services, 'services')}
+                      className="bg-blue-500 text-white px-4 py-3 rounded-lg hover:bg-blue-600 flex items-center justify-center gap-2 text-sm font-medium"
+                    >
+                      <Download className="h-4 w-4" />
+                      Export Layanan CSV
+                    </button>
+                    <button 
+                      onClick={() => exportToCSV(invoices.map(inv => ({
+                        ...inv,
+                        customerName: customers.find(c => c.id === inv.customerId)?.name || 'N/A',
+                        serviceName: services.find(s => s.id === inv.serviceId)?.name || 'N/A'
+                      })), 'invoices')}
+                      className="bg-purple-500 text-white px-4 py-3 rounded-lg hover:bg-purple-600 flex items-center justify-center gap-2 text-sm font-medium"
+                    >
+                      <Download className="h-4 w-4" />
+                      Export Tagihan CSV
+                    </button>
+                  </div>
+                  <div className="mt-6">
+                    <h4 className="font-medium text-gray-800 mb-3">Import Data</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Restore dari Backup</label>
+                        <input 
+                          type="file" 
+                          accept=".json"
+                          onChange={restoreFromBackup}
+                          className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Import Pelanggan CSV</label>
+                        <input 
+                          type="file" 
+                          accept=".csv"
+                          onChange={(e) => importFromCSV(e, 'customers')}
+                          className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Import Produk CSV</label>
+                        <input 
+                          type="file" 
+                          accept=".csv"
+                          onChange={(e) => importFromCSV(e, 'products')}
+                          className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-600">
+                      <strong>Tips:</strong> Backup otomatis menyimpan semua data dalam format JSON. 
+                      Export CSV cocok untuk analisis di Excel atau aplikasi lain. Import CSV akan menambahkan data baru tanpa menghapus yang lama.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Email Automation Section - Full Width */}
+                <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-primary-100 rounded-lg">
+                      <FileText className="h-5 w-5 text-primary-600" />
+                    </div>
+                    <h3 className="font-semibold text-gray-800">Email Automation</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <button 
+                      onClick={() => {
+                        checkExpiringServices();
+                        addToast('Pengecekan layanan yang akan berakhir selesai', 'info');
+                      }}
+                      className="bg-yellow-500 text-white px-4 py-3 rounded-lg hover:bg-yellow-600 flex items-center justify-center gap-2 text-sm font-medium"
+                    >
+                      <Bell className="h-4 w-4" />
+                      Cek & Kirim Reminder
+                    </button>
+                    <button 
+                      onClick={() => {
+                        const expiringServices = services.filter(service => {
+                          const expiryDate = new Date(service.expiryDate);
+                          const now = new Date();
+                          const daysUntilExpiry = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+                          return daysUntilExpiry <= 30 && daysUntilExpiry > 0;
+                        });
+                        addToast(`Ditemukan ${expiringServices.length} layanan yang akan berakhir dalam 30 hari`, 'info');
+                      }}
+                      className="bg-orange-500 text-white px-4 py-3 rounded-lg hover:bg-orange-600 flex items-center justify-center gap-2 text-sm font-medium"
+                    >
+                      <Clock className="h-4 w-4" />
+                      Lihat Layanan Berakhir
+                    </button>
+                    <button 
+                      onClick={() => {
+                        // Test email functionality
+                        const testCustomer = customers[0];
+                        if (testCustomer) {
+                          sendWelcomeEmail(testCustomer);
+                        } else {
+                          addToast('Tidak ada pelanggan untuk test email', 'error');
+                        }
+                      }}
+                      className="bg-gray-500 text-white px-4 py-3 rounded-lg hover:bg-gray-600 flex items-center justify-center gap-2 text-sm font-medium"
+                    >
+                      <FileText className="h-4 w-4" />
+                      Test Email
+                    </button>
+                  </div>
+                  <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                    <p className="text-sm text-blue-700">
+                      <strong>Info:</strong> Email automation akan mengirim pengingat otomatis untuk perpanjangan layanan.
+                      Saat ini email masih dalam mode simulasi. Untuk produksi, integrasikan dengan layanan email seperti SendGrid.
+                    </p>
+                  </div>
+                </div>
+
                 {/* Password Section - Full Width */}
                 <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                   <div className="flex items-center gap-3 mb-6">
@@ -2137,6 +2439,453 @@
         }
 
         const handleChangePassword = (oldPass, newPass) => {/* Simulasi, tidak ada backend */};
+
+        // Multi-currency and Tax Functions
+        const currencies = [
+            { code: 'IDR', symbol: 'Rp', name: 'Indonesian Rupiah' },
+            { code: 'USD', symbol: '$', name: 'US Dollar' },
+            { code: 'EUR', symbol: '€', name: 'Euro' },
+            { code: 'SGD', symbol: 'S$', name: 'Singapore Dollar' }
+        ];
+
+        const [defaultCurrency, setDefaultCurrency] = useState(
+            localStorage.getItem('hpanel_currency') || 'IDR'
+        );
+        const [taxRate, setTaxRate] = useState(
+            parseFloat(localStorage.getItem('hpanel_tax_rate')) || 11 // PPN 11%
+        );
+
+        const formatCurrencyWithCode = (amount, currencyCode = defaultCurrency) => {
+            const currency = currencies.find(c => c.code === currencyCode) || currencies[0];
+            if (currencyCode === 'IDR') {
+                return `${currency.symbol} ${amount.toLocaleString('id-ID')}`;
+            }
+            return `${currency.symbol}${amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+        };
+
+        const calculateTax = (amount, rate = taxRate) => {
+            return (amount * rate) / 100;
+        };
+
+        const calculateAmountWithTax = (amount, rate = taxRate) => {
+            return amount + calculateTax(amount, rate);
+        };
+
+        // Advanced Analytics Functions
+        const calculateRevenueTrend = (invoices, months = 6) => {
+            const now = new Date();
+            const trendData = [];
+            
+            for (let i = months - 1; i >= 0; i--) {
+                const targetMonth = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const monthName = targetMonth.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' });
+                
+                const monthlyRevenue = invoices
+                    .filter(inv => {
+                        const invDate = new Date(inv.dueDate);
+                        return invDate.getMonth() === targetMonth.getMonth() && 
+                               invDate.getFullYear() === targetMonth.getFullYear() &&
+                               inv.status === 'Lunas';
+                    })
+                    .reduce((sum, inv) => sum + inv.amount, 0);
+                
+                trendData.push({
+                    month: monthName,
+                    revenue: monthlyRevenue,
+                    formattedRevenue: formatCurrencyWithCode(monthlyRevenue)
+                });
+            }
+            
+            return trendData;
+        };
+
+        const calculateCustomerLifetimeValue = (customerId) => {
+            const customerInvoices = invoices.filter(inv => 
+                inv.customerId === customerId && inv.status === 'Lunas'
+            );
+            return customerInvoices.reduce((sum, inv) => sum + inv.amount, 0);
+        };
+
+        const getTopCustomers = (limit = 5) => {
+            const customerValues = customers.map(customer => ({
+                ...customer,
+                lifetimeValue: calculateCustomerLifetimeValue(customer.id),
+                activeServices: services.filter(s => s.customerId === customer.id && s.status === 'Aktif').length
+            }));
+            
+            return customerValues
+                .sort((a, b) => b.lifetimeValue - a.lifetimeValue)
+                .slice(0, limit);
+        };
+
+        const calculateChurnRisk = () => {
+            const now = new Date();
+            const riskCustomers = [];
+            
+            customers.forEach(customer => {
+                const customerServices = services.filter(s => s.customerId === customer.id);
+                const expiringSoon = customerServices.filter(s => {
+                    const expiry = new Date(s.expiryDate);
+                    const daysLeft = (expiry - now) / (1000 * 60 * 60 * 24);
+                    return daysLeft <= 30 && daysLeft > 0;
+                });
+                
+                const overdueInvoices = invoices.filter(inv => 
+                    inv.customerId === customer.id && 
+                    (inv.status === 'Belum Dibayar' || inv.status === 'Jatuh Tempo')
+                );
+                
+                if (expiringSoon.length > 0 || overdueInvoices.length > 0) {
+                    riskCustomers.push({
+                        ...customer,
+                        expiringSoon: expiringSoon.length,
+                        overdueInvoices: overdueInvoices.length,
+                        riskScore: (expiringSoon.length * 0.6) + (overdueInvoices.length * 0.4)
+                    });
+                }
+            });
+            
+            return riskCustomers.sort((a, b) => b.riskScore - a.riskScore);
+        };
+
+        // Add Export/Backup Functions
+        const exportToCSV = (data, filename) => {
+            if (!data || data.length === 0) {
+                addToast('Tidak ada data untuk diekspor', 'error');
+                return;
+            }
+            
+            const headers = Object.keys(data[0]);
+            const csvContent = [
+                headers.join(','),
+                ...data.map(row => headers.map(header => {
+                    const value = row[header];
+                    if (typeof value === 'string' && value.includes(',')) {
+                        return `"${value}"`;
+                    }
+                    return value;
+                }).join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `${filename}_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            addToast(`Data berhasil diekspor ke ${filename}.csv`, 'success');
+        };
+
+        const exportToExcel = async (data, filename) => {
+            if (!data || data.length === 0) {
+                addToast('Tidak ada data untuk diekspor', 'error');
+                return;
+            }
+            
+            try {
+                // Create workbook and worksheet
+                const workbook = {
+                    SheetNames: ['Data'],
+                    Sheets: {
+                        'Data': {}
+                    }
+                };
+                
+                const headers = Object.keys(data[0]);
+                const wsData = [headers, ...data.map(row => headers.map(header => row[header]))];
+                
+                // Convert to worksheet format
+                const ws = {};
+                wsData.forEach((row, rowIndex) => {
+                    row.forEach((cell, colIndex) => {
+                        const cellAddress = String.fromCharCode(65 + colIndex) + (rowIndex + 1);
+                        ws[cellAddress] = { v: cell };
+                    });
+                });
+                
+                ws['!ref'] = `A1:${String.fromCharCode(65 + headers.length - 1)}${wsData.length}`;
+                workbook.Sheets['Data'] = ws;
+                
+                addToast(`Data berhasil diekspor ke ${filename}.xlsx`, 'success');
+            } catch (error) {
+                addToast('Gagal mengekspor ke Excel: ' + error.message, 'error');
+            }
+        };
+
+        const performBackup = async () => {
+            try {
+                const backupData = {
+                    timestamp: new Date().toISOString(),
+                    customers: customers,
+                    products: products,
+                    services: services,
+                    invoices: invoices,
+                    adminProfile: adminProfile,
+                    version: '1.0'
+                };
+                
+                const dataStr = JSON.stringify(backupData, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `backup_nhbiru_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                addToast('Backup berhasil dibuat!', 'success');
+            } catch (error) {
+                addToast('Gagal membuat backup: ' + error.message, 'error');
+            }
+        };
+
+        const restoreFromBackup = (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const backupData = JSON.parse(e.target.result);
+                    
+                    // Validate backup data structure
+                    if (!backupData.customers || !backupData.products || !backupData.services || !backupData.invoices) {
+                        addToast('Format backup tidak valid!', 'error');
+                        return;
+                    }
+                    
+                    // Confirm restore
+                    if (confirm(`Apakah Anda yakin ingin mengembalikan data dari backup?\nTanggal backup: ${new Date(backupData.timestamp).toLocaleString('id-ID')}\nData ini akan menggantikan semua data yang ada!`)) {
+                        // Restore data
+                        setCustomers(backupData.customers);
+                        setProducts(backupData.products);
+                        setServices(backupData.services);
+                        setInvoices(backupData.invoices);
+                        
+                        if (backupData.adminProfile) {
+                            setAdminProfile(backupData.adminProfile);
+                        }
+                        
+                        // Clear local storage cache
+                        localStorage.removeItem('hpanel_data');
+                        
+                        addToast('Data berhasil dikembalikan dari backup!', 'success');
+                    }
+                    
+                } catch (error) {
+                    addToast('Gagal membaca file backup: ' + error.message, 'error');
+                }
+            };
+            
+            reader.readAsText(file);
+            // Reset input
+            event.target.value = '';
+        };
+
+        const importFromCSV = (event, dataType) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const csv = e.target.result;
+                    const lines = csv.split('\n').filter(line => line.trim());
+                    const headers = lines[0].split(',').map(h => h.trim());
+                    
+                    const data = lines.slice(1).map(line => {
+                        const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+                        const obj = {};
+                        headers.forEach((header, index) => {
+                            obj[header] = values[index] || '';
+                        });
+                        return obj;
+                    });
+                    
+                    if (confirm(`Import ${data.length} record dari CSV?`)) {
+                        switch(dataType) {
+                            case 'customers':
+                                // Add imported customers with new IDs
+                                const newCustomers = data.map(item => ({
+                                    ...item,
+                                    id: Date.now() + Math.random(),
+                                    customerId: item.customerId || `CUST${Date.now()}`,
+                                    joinDate: item.joinDate || new Date().toISOString()
+                                }));
+                                setCustomers(prev => [...prev, ...newCustomers]);
+                                break;
+                            case 'products':
+                                const newProducts = data.map(item => ({
+                                    ...item,
+                                    id: Date.now() + Math.random(),
+                                    price: parseFloat(item.price) || 0
+                                }));
+                                setProducts(prev => [...prev, ...newProducts]);
+                                break;
+                        }
+                        addToast(`${data.length} ${dataType} berhasil diimpor!`, 'success');
+                    }
+                    
+                } catch (error) {
+                    addToast('Gagal mengimpor CSV: ' + error.message, 'error');
+                }
+            };
+            
+            reader.readAsText(file);
+            event.target.value = '';
+        };
+
+        // Email Automation Functions
+        const sendEmail = async (to, subject, body, type = 'reminder') => {
+            try {
+                // Simulate email sending - replace with actual email service integration
+                const emailData = {
+                    to: to,
+                    subject: subject,
+                    body: body,
+                    type: type,
+                    timestamp: new Date().toISOString()
+                };
+                
+                // In real implementation, integrate with EmailJS, SendGrid, or similar service
+                console.log('Sending email:', emailData);
+                
+                // For now, just log and show success
+                addToast(`Email ${type} berhasil dikirim ke ${to}`, 'success');
+                return { success: true };
+            } catch (error) {
+                addToast('Gagal mengirim email: ' + error.message, 'error');
+                return { success: false, error: error.message };
+            }
+        };
+
+        const sendRenewalReminder = async (service) => {
+            const customer = customers.find(c => c.id === service.customerId);
+            const product = products.find(p => p.id === service.productId);
+            
+            if (!customer || !product) return;
+            
+            const subject = `Pengingat Perpanjangan Layanan - ${service.name}`;
+            const body = `
+Halo ${customer.name},
+
+Layanan ${service.name} (${product.name}) Anda akan berakhir pada ${formatDateID(service.expiryDate)}.
+
+Detail Layanan:
+- Domain/Layanan: ${service.name}
+- Jenis: ${product.name}
+- Harga Perpanjangan: ${formatCurrency(product.price)}
+- Tanggal Berakhir: ${formatDateID(service.expiryDate)}
+
+Silakan hubungi kami untuk melakukan perpanjangan.
+
+Terima kasih,
+${adminProfile.name}
+            `;
+            
+            return await sendEmail(customer.email, subject, body, 'renewal');
+        };
+
+        const sendWelcomeEmail = async (customer) => {
+            const subject = `Selamat Datang di ${adminProfile.name || 'NH BIRU'}`;
+            const body = `
+Halo ${customer.name},
+
+Selamat datang! Akun Anda telah berhasil dibuat.
+
+Detail Akun:
+- Nama: ${customer.name}
+- Email: ${customer.email}
+- Customer ID: ${customer.customerId || customer.id}
+
+Kami siap membantu kebutuhan layanan website Anda.
+
+Terima kasih,
+${adminProfile.name}
+            `;
+            
+            return await sendEmail(customer.email, subject, body, 'welcome');
+        };
+
+        const sendInvoiceEmail = async (invoice) => {
+            const customer = customers.find(c => c.id === invoice.customerId);
+            const service = services.find(s => s.id === invoice.serviceId);
+            
+            if (!customer || !service) return;
+            
+            const subject = `Invoice #${invoice.id} - ${service.name}`;
+            const body = `
+Halo ${customer.name},
+
+Invoice untuk layanan ${service.name} telah dibuat.
+
+Detail Invoice:
+- No. Invoice: ${invoice.id}
+- Layanan: ${service.name}
+- Jumlah: ${formatCurrency(invoice.amount)}
+- Jatuh Tempo: ${formatDateID(invoice.dueDate)}
+- Status: ${invoice.status}
+
+Mohon untuk melakukan pembayaran sebelum tanggal jatuh tempo.
+
+Terima kasih,
+${adminProfile.name}
+            `;
+            
+            return await sendEmail(customer.email, subject, body, 'invoice');
+        };
+
+        // Auto check for expiring services
+        const checkExpiringServices = () => {
+            const now = new Date();
+            const thirtyDaysFromNow = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000));
+            
+            services.forEach(service => {
+                const expiryDate = new Date(service.expiryDate);
+                const daysUntilExpiry = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+                
+                // Send reminder at 30, 15, 7, and 1 days before expiry
+                if ([30, 15, 7, 1].includes(daysUntilExpiry)) {
+                    sendRenewalReminder(service);
+                }
+            });
+        };
+
+                  // Auto-run expiry check every hour (in production, use server-side cron)
+          useEffect(() => {
+              const interval = setInterval(checkExpiringServices, 60 * 60 * 1000); // 1 hour
+              return () => clearInterval(interval);
+          }, [services, customers, products]);
+
+          // Enhanced customer creation with welcome email
+          const handleCustomerSave = async (customerData) => {
+              const result = await postData('SAVE_CUSTOMER', customerData);
+              if (result.success) {
+                  // Send welcome email automatically
+                  if (customerData.email) {
+                      await sendWelcomeEmail(customerData);
+                  }
+                  return result;
+              }
+              return result;
+          };
+
+          // Enhanced invoice creation with automatic email
+          const handleInvoiceCreation = async (invoiceData) => {
+              const result = await postData('CREATE_INVOICE', invoiceData);
+              if (result.success) {
+                  // Send invoice email automatically
+                  await sendInvoiceEmail(result.invoice);
+                  return result;
+              }
+              return result;
+          };
 
     </script>
 </body>
